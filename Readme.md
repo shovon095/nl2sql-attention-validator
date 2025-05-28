@@ -132,7 +132,7 @@ project/dev/
 ```bash
 export OPENAI_API_KEY="sk-..."   # or pass via --api_key
 
-python nl2sql_validate.py   --eval_path          eval/eval.json   --mode               dev   --db_root_path       databases   --api_key            $OPENAI_API_KEY   --engine             gpt-4o   --data_output_path   outputs/   --feedback_output_path outputs/feedback_dev.json   --use_knowledge      False   --chain_of_thought   False
+python nl2sql_attention.py   --eval_path   eval/eval.json   --mode  dev   --db_root_path       databases   --api_key            $OPENAI_API_KEY   --engine    gpt-4o   --data_output_path   outputs/   --feedback_output_path outputs/feedback_dev.json   --use_knowledge      False   --chain_of_thought   False
 ```
 
 Outputs:
