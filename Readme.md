@@ -1,0 +1,160 @@
+# 🧠→🗄️ NL‑to‑SQL with Caching, **Attention Masking**, and Self‑Validation
+Generate, execute, and iteratively refine _valid_ SQLite queries from natural‑language questions using OpenAI chat models.
+
+---
+
+## 📌 At a Glance
+| Problem | This project’s answer |
+|---------|-----------------------|
+| Large schema, irrelevant tables → hallucinated joins | **Entity‑aware *soft masking*** – numeric weights hint the model toward relevant tables/columns. |
+| Unreliable SQL from LLM | **Execution + feedback loop** – run the query, analyse results, regenerate up to 3×. |
+| Slow schema access | **On‑disk cache** (`./schema_cache/*.json`). |
+| Need auditability | Full attempt history with validation feedback in `feedback_<mode>.json`. |
+
+---
+
+## 🛠  Core Pipeline
+
+```text
+          ┌─────────────┐
+          │ eval.json   │  (Q, db_id, evidence)
+          └─────┬───────┘
+                │
+        1. SchemaCache        (DDL + columns → JSON)
+                │
+        2. Entity / relation extraction (SpaCy)
+                │
+        3. Map → relevant tables/columns
+                │
+        4. Build ★ ATTENTION MASK ★
+                │
+        5. Compose prompt (few‑shot + CoT + mask)
+                │
+        6. Call OpenAI        (retry & timeout)
+                │
+        7. Execute SQL on SQLite
+                │
+        8. Validate → feedback → regenerate (≤3)
+                │
+          ┌─────▼──────┐
+          │ Outputs    │  predict_*.json • feedback_*.json
+          └────────────┘
+```
+
+---
+
+## 🎯  Attention / Masking Mechanism
+
+1. **Entity & dependency mining**  
+   SpaCy detects named entities _and_ subject/​object pairs in the question.
+
+2. **Schema mapping → weights**  
+   * +1.0 * for exact hits on table/column names.  
+   * +0.5 * extra if either side of a dependency pair appears.  
+   Non‑relevant elements receive a floor weight of **0.3**.
+
+3. **Soft mask, not hard filter**  
+   The weights are **exposed inside the prompt** in two ways:
+
+   *Inline comments* inside each `CREATE TABLE …`:
+
+   ```sql
+   CREATE TABLE orders (
+       order_id INTEGER PRIMARY KEY,          -- Attention Weight: 1.5
+       order_date TEXT                        -- Attention Weight: 1.5
+   ) -- Attention Weight: 1.5
+   ```
+
+   *Standalone block*:
+
+   ```
+   ### Schema Attention Weights ###
+   orders: 1.5
+   orders.order_date: 1.5
+   customers: 0.3
+   ...
+   ```
+
+   > The LLM remains free to use any part of the schema, but higher‑weighted
+   > elements are statistically more likely to be selected – a **soft mask**.
+
+---
+
+## ✨  Feature Table
+| Area | Details |
+|------|---------|
+| **Schema cache** | JSON snapshot of DDL + columns for each DB (`SchemaCache`). |
+| **Few‑shot** | One‑shot demo (with or without external knowledge). |
+| **Chain‑of‑Thought (optional)** | `--chain_of_thought True` injects a CoT instruction but strips CoT from final answer. |
+| **Self‑validation loop** | Up to 3 cycles: execute → analyse → feedback → regenerate. |
+| **Confidence scoring** | Combines execution success, row count, and issue count. |
+| **Timeouts & retries** | `signal.alarm` for code/DB, `backoff` for rate‑limits. |
+
+---
+
+## 📦  Installation
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: .env\Scriptsctivate
+pip install -U openai backoff sqlparse tqdm spacy
+python -m spacy download en_core_web_sm
+```
+
+> `signal.alarm` requires POSIX (Linux/macOS). On Windows use WSL or adapt to `multiprocessing`.
+
+---
+
+## 🗂  Data Layout
+
+```
+project/
+├── databases/
+│   └── <db_id>/<db_id>.sqlite
+└── eval/
+    └── eval.json
+```
+
+`eval.json` object schema:
+
+```json
+{
+  "question": "How many orders were shipped to Canada in 2024?",
+  "db_id":    "northwind",
+  "evidence": "Canada appears in the 'Customers' table under 'Country'."
+}
+```
+
+---
+
+## 🚀  Usage
+
+```bash
+export OPENAI_API_KEY="sk-..."   # or pass via --api_key
+
+python nl2sql_validate.py   --eval_path          eval/eval.json   --mode               dev   --db_root_path       databases   --api_key            $OPENAI_API_KEY   --engine             gpt-4o   --data_output_path   outputs/   --feedback_output_path outputs/feedback_dev.json   --use_knowledge      False   --chain_of_thought   False
+```
+
+Outputs:
+
+```
+outputs/
+├── predict_dev.json   # {int: SQL string}
+└── feedback_dev.json  # per‑question attempt log
+```
+
+---
+
+## ⚠️  Limitations / TODO
+
+* `--use_knowledge` flag is parsed but not yet threaded into prompt builder (quick fix needed).
+* Path join assumes `--data_output_path` ends with `/`; switch to `os.path.join`.
+* Windows: replace `signal.alarm`.
+
+---
+
+## 📝  License
+
+MIT License — see `LICENSE`.
+
+> Found a bug or have an improvement? PRs welcome!
