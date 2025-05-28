@@ -1,9 +1,9 @@
-# 🧠→🗄️ NL‑to‑SQL with Caching, **Attention Masking**, and Self‑Validation
+# NL‑to‑SQL with Caching, **Attention Masking**, and Self‑Validation
 Generate, execute, and iteratively refine _valid_ SQLite queries from natural‑language questions using OpenAI chat models.
 
 ---
 
-## 📌 At a Glance
+## At a Glance
 | Problem | This project’s answer |
 |---------|-----------------------|
 | Large schema, irrelevant tables → hallucinated joins | **Entity‑aware *soft masking*** – numeric weights hint the model toward relevant tables/columns. |
@@ -13,7 +13,7 @@ Generate, execute, and iteratively refine _valid_ SQLite queries from natural‑
 
 ---
 
-## 🛠  Core Pipeline
+##  Core Pipeline
 
 ```text
           ┌─────────────┐
@@ -43,7 +43,7 @@ Generate, execute, and iteratively refine _valid_ SQLite queries from natural‑
 
 ---
 
-## 🎯  Attention / Masking Mechanism
+##  Attention / Masking Mechanism
 
 1. **Entity & dependency mining**  
    SpaCy detects named entities _and_ subject/​object pairs in the question.
@@ -92,7 +92,7 @@ Generate, execute, and iteratively refine _valid_ SQLite queries from natural‑
 
 ---
 
-## 📦  Installation
+## Installation
 
 ```bash
 python -m venv venv
@@ -105,17 +105,17 @@ python -m spacy download en_core_web_sm
 
 ---
 
-## 🗂  Data Layout
+##  Data Layout
 
 ```
-project/
+project/dev/
 ├── databases/
 │   └── <db_id>/<db_id>.sqlite
 └── eval/
-    └── eval.json
+    └── dev.json
 ```
 
-`eval.json` object schema:
+`dev.json` object schema:
 
 ```json
 {
@@ -127,7 +127,7 @@ project/
 
 ---
 
-## 🚀  Usage
+## Usage
 
 ```bash
 export OPENAI_API_KEY="sk-..."   # or pass via --api_key
@@ -147,14 +147,8 @@ outputs/
 
 ## ⚠️  Limitations / TODO
 
-* `--use_knowledge` flag is parsed but not yet threaded into prompt builder (quick fix needed).
-* Path join assumes `--data_output_path` ends with `/`; switch to `os.path.join`.
-* Windows: replace `signal.alarm`.
+* `--use_knowledge` flag is parsed but not threaded into prompt builder since we focus on the text2sql case without usage of any external knowledge.
 
 ---
-
-## 📝  License
-
-MIT License — see `LICENSE`.
 
 > Found a bug or have an improvement? PRs welcome!
