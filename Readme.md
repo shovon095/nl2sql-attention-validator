@@ -145,9 +145,10 @@ outputs/
 
 ---
 
-## ⚠️  Limitations / TODO
+## ⚠️  Limitations 
 
 * `--use_knowledge` flag is parsed but not threaded into prompt builder since we focus on the text2sql case without usage of any external knowledge.
+* For the evaluation, we use EX and VES defined by the original BIRD repository (https://github.com/AlibabaResearch/DAMO-ConvAI/tree/main/bird)
 
 ---
 
