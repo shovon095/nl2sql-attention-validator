@@ -124,7 +124,7 @@ project/dev/
   "evidence": "Canada appears in the 'Customers' table under 'Country'."
 }
 ```
-
+Please download the BIRD dataset from- https://bird-bench.github.io/
 ---
 
 ## Usage
