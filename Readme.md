@@ -15,30 +15,28 @@ Generate, execute, and iteratively refine _valid_ SQLite queries from natural‑
 
 ##  Core Pipeline
 
-```text
-          ┌─────────────┐
-          │ eval.json   │  (Q, db_id, evidence)
-          └─────┬───────┘
-                │
-        1. SchemaCache        (DDL + columns → JSON)
-                │
-        2. Entity / relation extraction (SpaCy)
-                │
-        3. Map → relevant tables/columns
-                │
-        4. Build ★ ATTENTION MASK ★
-                │
-        5. Compose prompt (few‑shot + CoT + mask)
-                │
-        6. Call OpenAI        (retry & timeout)
-                │
-        7. Execute SQL on SQLite
-                │
-        8. Validate → feedback → regenerate (≤3)
-                │
-          ┌─────▼──────┐
-          │ Outputs    │  predict_*.json • feedback_*.json
-          └────────────┘
+## Framework Overview
+
+```mermaid
+flowchart TD
+  Q["Natural Language Question (Q)"] --> PRE["Preprocessing (e.g., schema linking, tagging)"]
+  PRE --> PR["Prompt Construction"]
+  PR --> NPA["Non-Parametric Attention Module"]
+  NPA --> LLM["LLMs (GPT, LLaMA, etc.)"]
+  LLM --> SQL["Generated SQL (Y)"]
+
+  SQL --> EV["SQL Quality Evaluation"]
+  EV -->|Low Quality| PR
+  EV -->|High Quality| OUT["Final SQL ✔"]
+
+  subgraph DBInfo["Schema & Database Context"]
+    DB["Database Content"]
+    S["Schema Representation (S)"]
+  end
+
+  DB --> PRE
+  S --> PRE
+  S --> NPA
 ```
 
 ---
