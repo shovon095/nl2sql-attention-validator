@@ -25,7 +25,7 @@ flowchart LR
   PRE --> PR["Prompt + NPA"]
   PR --> LLM["LLM (GPT / LLaMA)"]
   LLM --> SQL["SQL Output (Y)"]
-  SQL --> EV["SQL Quality Eval"]
+  SQL --> EV["SQL Confidence Eval"]
   EV -->|Low Quality| PR
   EV -->|High Quality| FINAL["Final SQL ✔"]
 
