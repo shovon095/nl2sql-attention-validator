@@ -1,4 +1,4 @@
-# NL‑to‑SQL with Caching, **Attention Masking**, and Self‑Validation
+# Integrating Non-Parametric Attention and Prompt Refinement to Enhance LLM-BasedText-to-SQL Without External Knowledge
 Generate, execute, and iteratively refine _valid_ SQLite queries from natural‑language questions using OpenAI chat models.
 
 ---
