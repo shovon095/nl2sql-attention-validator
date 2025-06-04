@@ -17,27 +17,22 @@ Generate, execute, and iteratively refine _valid_ SQLite queries from natural‑
 
 ## Framework Overview
 
+## Framework Overview
+
 ```mermaid
-flowchart TD
-  Q["Natural Language Query (Q)"]
-  Q --> PRE["Preprocessing\n(Schema Linking, Tagging)"]
-  PRE --> PR["Prompt Construction"]
-  PR --> NPA["Non-Parametric Attention"]
-  NPA --> LLM["LLM (GPT / LLaMA)"]
-  LLM --> SQL["Generated SQL (Y)"]
-  SQL --> EV["SQL Quality Evaluation"]
-
+flowchart LR
+  Q["User Query (Q)"] --> PRE["Preprocessing"]
+  PRE --> PR["Prompt + NPA"]
+  PR --> LLM["LLM (GPT / LLaMA)"]
+  LLM --> SQL["SQL Output (Y)"]
+  SQL --> EV["SQL Quality Eval"]
   EV -->|Low Quality| PR
-  EV -->|High Quality| OUT["Final SQL ✔"]
+  EV -->|High Quality| FINAL["Final SQL ✔"]
 
-  subgraph DBInfo["Database Context"]
-    DB["Database Content"]
-    SCHEMA["DB Schema (S)"]
-  end
+  DB[Database] -.-> PRE
+  SCHEMA[Schema] -.-> PRE
+  SCHEMA -.-> PR
 
-  DB --> PRE
-  SCHEMA --> PRE
-  SCHEMA --> NPA
 
 ```
 
