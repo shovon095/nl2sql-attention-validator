@@ -22,14 +22,14 @@ This framework improves LLM-based Text-to-SQL generation using **non-parametric 
 
 ---
 
-### 🔍 A. Data Preprocessing
+###  A. Data Preprocessing
 
 - Extracts named entities and relations using **SpaCy** (`en_core_web_sm`).
 - Identified entities are mapped to relevant schema elements.
 
 ---
 
-### 🎯 B. Non-Parametric Attention
+###  B. Non-Parametric Attention
 
 Assigns soft relevance weights to tables/columns based on entity matches:
 
@@ -44,36 +44,7 @@ Assigns soft relevance weights to tables/columns based on entity matches:
   - Inline SQL comments
   - Schema summary blocks
 
----
-
-### ✏️ C. Prompt Refinement
-
-- Prompts include:
-  - NL query
-  - Weighted schema
-  - SQL generation instruction
-- After SQL generation:
-  - Query is executed and scored:
-    - Success (0.5), row range reward/penalty, error penalty
-  - If confidence score (`CS`) is low, regenerate with:
-    - Feedback
-    - Previous attempt summary
-
----
-
----
-
-##  Attention / Masking Mechanism
-
-1. **Entity & dependency mining**  
-   SpaCy detects named entities _and_ subject/​object pairs in the question.
-
-2. **Schema mapping → weights**  
-   * +1.0 * for exact hits on table/column names.  
-   * +0.5 * extra if either side of a dependency pair appears.  
-   Non‑relevant elements receive a floor weight of **0.3**.
-
-3. **Soft mask, not hard filter**  
+ **Soft mask, not hard filter**  
    The weights are **exposed inside the prompt** in two ways:
 
    *Inline comments* inside each `CREATE TABLE …`:
@@ -97,10 +68,25 @@ Assigns soft relevance weights to tables/columns based on entity matches:
 
    > The LLM remains free to use any part of the schema, but higher‑weighted
    > elements are statistically more likely to be selected – a **soft mask**.
+---
+
+###  C. Prompt Refinement
+
+- Prompts include:
+  - NL query
+  - Weighted schema
+  - SQL generation instruction
+- After SQL generation:
+  - Query is executed and scored:
+    - Success (0.5), row range reward/penalty, error penalty
+  - If confidence score (`CS`) is low, regenerate with:
+    - Feedback
+    - Previous attempt summary
+
 
 ---
 
-## ✨  Feature Table
+##  Feature Table
 | Area | Details |
 |------|---------|
 | **Schema cache** | JSON snapshot of DDL + columns for each DB (`SchemaCache`). |
