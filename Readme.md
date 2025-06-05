@@ -19,23 +19,7 @@ Generate, execute, and iteratively refine _valid_ SQLite queries from natural‑
 
 ## Framework Overview
 
-```mermaid
-flowchart LR
-  Q["User Query (Q)"] --> PRE["Preprocessing"]
-  PRE --> PR["Prompt + NPA"]
-  PR --> LLM["LLM (GPT / LLaMA)"]
-  LLM --> SQL["SQL Output (Y)"]
-  SQL --> EV["SQL Confidence Eval"]
-  EV -->|Low Quality| PR
-  EV -->|High Quality| FINAL["Final SQL ✔"]
-
-  DB[Database] -.-> PRE
-  SCHEMA[Schema] -.-> PRE
-  SCHEMA -.-> PR
-
-
-```
-
+![Framework Overview](./images/attention_pipeline.png)
 ---
 
 ##  Attention / Masking Mechanism
