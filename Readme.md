@@ -13,13 +13,54 @@ Generate, execute, and iteratively refine _valid_ SQLite queries from natural‑
 
 ---
 
-##  Core Pipeline
-
-## Framework Overview
-
 ## Framework Overview
 
 ![Framework Overview](./images/attention_pipeline.png)
+
+
+This framework improves LLM-based Text-to-SQL generation using **non-parametric attention** and **prompt refinement**, without external knowledge.
+
+---
+
+### 🔍 A. Data Preprocessing
+
+- Extracts named entities and relations using **SpaCy** (`en_core_web_sm`).
+- Identified entities are mapped to relevant schema elements.
+
+---
+
+### 🎯 B. Non-Parametric Attention
+
+Assigns soft relevance weights to tables/columns based on entity matches:
+
+| Type     | Matched Weight       | Unmatched Weight |
+|----------|----------------------|------------------|
+| Tables   | `1.0 + hits`         | `0.5`            |
+| Columns  | `1.0 + hits`         | `0.3`            |
+
+- Relation-aware scores update weights.
+- Final weights are max-normalized.
+- Weights appear in prompts via:
+  - Inline SQL comments
+  - Schema summary blocks
+
+---
+
+### ✏️ C. Prompt Refinement
+
+- Prompts include:
+  - NL query
+  - Weighted schema
+  - SQL generation instruction
+- After SQL generation:
+  - Query is executed and scored:
+    - Success (0.5), row range reward/penalty, error penalty
+  - If confidence score (`CS`) is low, regenerate with:
+    - Feedback
+    - Previous attempt summary
+
+---
+
 ---
 
 ##  Attention / Masking Mechanism
